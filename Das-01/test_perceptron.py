@@ -1,6 +1,6 @@
-# Kamangar, Farhad
-# 1000-123-456
-# 2019-09-22
+# Das, Aditya
+# 1001-675-672
+# 2019-09-17
 # Assignment-01-02
 
 import numpy as np

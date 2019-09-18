@@ -1,6 +1,6 @@
-# Kamangar, Farhad
-# 1000-123-456
-# 2019-09-22
+# Das, Aditya
+# 1001-675-672
+# 2019-09-17
 # Assignment-01-01
 
 import numpy as np
@@ -60,6 +60,8 @@ class Perceptron(object):
         :param num_epochs: Number of times training should be repeated over all input data
         :param alpha: Learning rate
         :return: None
+        
+        perceptron learning rule Wnew = Wold + e*p   // where e = t-a, p is input, e is error, t is target and a is output.  
         """
         raise Warning("You must implement train")
 
