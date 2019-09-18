@@ -41,6 +41,8 @@ class Perceptron(object):
         as the first row.
         :return: Array of model outputs [number_of_classes ,n_samples]
         """
+        X[:] = np.where(X[:] <=0 , 0,1);
+        return X;
         raise Warning("You must implement predict. This function should make a prediction on a matrix of inputs")
 
 
@@ -89,7 +91,7 @@ if __name__ == "__main__":
     X_train = np.array([[-1.43815556, 0.10089809, -1.25432937, 1.48410426],
                         [-1.81784194, 0.42935033, -1.2806198, 0.06527391]])
     print(model.predict(X_train))
-    Y_train = np.array([[1, 0, 0, 1], [0, 1, 1, 0]])
+    Y_train = np.array([[1, 0, 0, 1], [0, 1, 1, 0]]) 
     model.initialize_all_weights_to_zeros()
     print("****** Model weights ******\n",model.weights)
     print("****** Input samples ******\n",X_train)
