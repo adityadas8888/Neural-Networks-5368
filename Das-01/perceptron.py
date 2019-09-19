@@ -41,7 +41,7 @@ class Perceptron(object):
         as the first row.
         :return: Array of model outputs [number_of_classes ,n_samples]
         """
-        X[:] = np.where(X[:] <=0 , 0,1);
+        X[:] = np.where(X[:] <=0, 0,1);
         return X;
         raise Warning("You must implement predict. This function should make a prediction on a matrix of inputs")
 
