@@ -24,17 +24,17 @@ class Perceptron(object):
         Initialize the weights, initalize using random numbers.
         Note that number of neurons in the model is equal to the number of classes
         """
-
-
         self.weights = []
-        weights = np.random.randn(input_dimensions,input_dimensions+1);
+        weights = np.random.randn(input_dimensions,number_of_classes+1);
         raise Warning("You must implement _initialize_weights! This function should initialize (or re-initialize) your model weights. Bias should be included in the weights")
 
     def initialize_all_weights_to_zeros(self):
         """
-        Initialize the weights, initalize using random numbers.
+        Initialize the weights to zeros
         """
-        self.weights = []
+        #self.weights = []
+        weights = np.zeros([input_dimensions, number_of_classes+1], dtype = int);
+        
         raise Warning("You must implement this function! This function should initialize (or re-initialize) your model weights to zeros. Bias should be included in the weights")
 
     def predict(self, X):
@@ -53,13 +53,14 @@ class Perceptron(object):
         """
         This function prints the weight matrix (Bias is included in the weight matrix).
         """
+        print(weights);
         raise Warning("You must implement print_weights")
 
     def train(self, X, Y, num_epochs=10, alpha=0.001):
         """
         Given a batch of data, and the necessary hyperparameters,
         this function adjusts the self.weights using Perceptron learning rule.
-        Training should be repeted num_epochs time.
+        Training should be repeated num_epochs time.
         :param X: Array of input [input_dimensions,n_samples]
         :param y: Array of desired (target) outputs [number_of_classes ,n_samples]
         :param num_epochs: Number of times training should be repeated over all input data
@@ -68,6 +69,11 @@ class Perceptron(object):
         
         perceptron learning rule Wnew = Wold + e*p   // where e = t-a, p is input, e is error, t is target and a is output.  
         """
+
+        for i in range(num_epochs):
+            output = self.weights.dot(X);
+            error = Y - output;
+            weights = weights+error.dot(X);
         raise Warning("You must implement train")
 
     def calculate_percent_error(self,X, Y):
@@ -79,6 +85,8 @@ class Perceptron(object):
         :param y: Array of desired (target) outputs [number_of_classes ,n_samples]
         :return percent_error
         """
+
+        
         raise Warning("You must implement calculate_percent_error")
 
 if __name__ == "__main__":
