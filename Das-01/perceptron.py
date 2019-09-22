@@ -24,7 +24,10 @@ class Perceptron(object):
         Initialize the weights, initalize using random numbers.
         Note that number of neurons in the model is equal to the number of classes
         """
+
+
         self.weights = []
+        weights = np.random.randn(input_dimensions,input_dimensions+1);
         raise Warning("You must implement _initialize_weights! This function should initialize (or re-initialize) your model weights. Bias should be included in the weights")
 
     def initialize_all_weights_to_zeros(self):
@@ -79,6 +82,8 @@ class Perceptron(object):
         raise Warning("You must implement calculate_percent_error")
 
 if __name__ == "__main__":
+
+
     """
     This main program is a sample of how to run your program.
     You may modify this main program as you desire.
@@ -102,3 +107,46 @@ if __name__ == "__main__":
         percent_error.append(model.calculate_percent_error(X_train,Y_train))
     print("******  Percent Error ******\n",percent_error)
     print("****** Model weights ******\n",model.weights)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# if __name__ == "__main__":
+
+
+#     """
+#     This main program is a sample of how to run your program.
+#     You may modify this main program as you desire.
+#     """
+
+#     input_dimensions = 2
+#     number_of_classes = 2
+
+#     for i in range(number_of_classes):
+#         model = [];
+#         model[i] = Perceptron(input_dimensions=input_dimensions, number_of_classes=number_of_classes, seed=1)
+#         X_train = np.array([[-1.43815556, 0.10089809, -1.25432937, 1.48410426],
+#                             [-1.81784194, 0.42935033, -1.2806198, 0.06527391]])
+#         print(model[i].predict(X_train))
+#         Y_train = np.array([[1, 0, 0, 1], [0, 1, 1, 0]]) 
+#         model[i].initialize_all_weights_to_zeros()
+#         print("****** Model weights ******\n",model[i].weights)
+#         print("****** Input samples ******\n",X_train)
+#         print("****** Desired Output ******\n",Y_train)
+#         percent_error=[]
+#         for k in range (20):
+#             model[i].train(X_train, Y_train, num_epochs=1, alpha=0.0001)
+#             percent_error.append(model[i].calculate_percent_error(X_train,Y_train))
+#         print("******  Percent Error ******\n",percent_error)
+#         print("****** Model weights ******\n",model[i].weights)
