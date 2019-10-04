@@ -65,10 +65,14 @@ class Hebbian(object):
         Initialize the weights, initalize using random numbers.
         Note that number of neurons in the model is equal to the number of classes
         """
+        self.weights = [];
+        self.weights = np.array(self.weights, dtype=np.float);
+        self.weights = np.random.randn(self.number_of_classes,self.input_dimensions+1);
     def initialize_all_weights_to_zeros(self):
         """
         Initialize the weights, initalize using random numbers.
         """
+        self.weights = np.zeros([self.number_of_classes,self.input_dimensions+1], dtype = int);
     def predict(self, X):
         """
         Make a prediction on an array of inputs
@@ -76,7 +80,14 @@ class Hebbian(object):
         as the first row.
         :return: Array of model outputs [number_of_classes ,n_samples]. This array is a numerical array.
         """
-
+        if(self.transfer_function=="Hard_limit"):
+            print("hard limit")
+        elif(self.transfer_function=="Sigmoid"):
+            print("Sigmoid")
+        elif(self.transfer_function=="Linear"):
+            print("Linear")
+        else:
+            print("Invalid")
     def print_weights(self):
         """
         This function prints the weight matrix (Bias is included in the weight matrix).
