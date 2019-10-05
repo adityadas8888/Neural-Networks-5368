@@ -44,6 +44,9 @@ def display_numpy_array_as_table(input_array):
 	ax.set_xticks([])
 	ax.set_yticks([])
 	plt.show()
+
+
+
 class Hebbian(object):
     def __init__(self, input_dimensions=2,number_of_classes=4,transfer_function="Hard_limit",seed=None):
         """
@@ -65,14 +68,15 @@ class Hebbian(object):
         Initialize the weights, initalize using random numbers.
         Note that number of neurons in the model is equal to the number of classes
         """
-        # self.weights = [];
-        # self.weights = np.array(self.weights, dtype=np.float);
-        # self.weights = np.random.randn(self.number_of_classes,self.input_dimensions+1);
+        self.weights = [];
+        self.weights = np.array(self.weights, dtype=np.float);
+        self.weights = np.random.randn(self.number_of_classes,self.input_dimensions+1);
+
     def initialize_all_weights_to_zeros(self):
         """
         Initialize the weights, initalize using random numbers.
         """
-        # self.weights = np.zeros([self.number_of_classes,self.input_dimensions+1], dtype = int);
+        self.weights = np.zeros([self.number_of_classes,self.input_dimensions+1], dtype = int);
     def predict(self, X):
         """
         Make a prediction on an array of inputs
@@ -92,7 +96,7 @@ class Hebbian(object):
         """
         This function prints the weight matrix (Bias is included in the weight matrix).
         """
-    def train(self, X, y, batch_size=1,num_epochs=10,  alpha=0.1,gamma=0.9,learning="Delta"):
+    def train(self, X, Y, batch_size=1,num_epochs=10,  alpha=0.1,gamma=0.9,learning="Delta"):
         """
         Given a batch of data, and the necessary hyperparameters,
         this function adjusts the self.weights using Perceptron learning rule.
@@ -108,7 +112,45 @@ class Hebbian(object):
         :return: None
         """
 
+        no_runs,remaining = self.chunkify(X.shape[1],batch_size);
 
+        X = np.insert(X,0,1,axis=0);
+        for i in range(num_epochs):
+           start = 0;
+           end = batch_size-1;
+           for j in range(no_runs+1):
+               
+               input_sliced = X[:,start:end];
+               output = np.dot(self.weights,input_sliced);
+               #call to predict
+            #    predicted_sliced = np.where(output[:] <0, 0,1);   
+               target_sliced = X[:,start:end];
+               error = target_sliced - predicted_sliced;
+               ep = self.calculate_error(error,input_sliced);
+               self.weights = self.weights + alpha*(ep);
+               start = end+1;
+               if(j==no_runs-1):
+                   end =  X.shape[1]-remaining;
+               elif(j<no_runs):
+                   end = ((j+2)*batch_size)-1;
+                
+
+
+        # if(self.transfer_function=="Filtered"):
+        #     print("Filtered")
+        # elif(self.transfer_function=="Delta"):
+        #     print("Delta")
+        # elif(self.transfer_function=="Unsupervised_hebb"):
+        #     print("Unsupervised_hebb")
+        # else:
+        #     print("Invalid")
+
+
+
+    def chunkify(self,dataset_size,batch_size):
+        no_runs = int(dataset_size/batch_size);
+        remaining = dataset_size%batch_size;
+        return no_runs,remaining
 
     def calculate_percent_error(self,X, y):
         """
@@ -143,23 +185,26 @@ if __name__ == "__main__":
     number_of_training_samples_to_use = 700
     number_of_test_samples_to_use = 100
 
-    (X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data()
-    
+    (X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data(); ## splitting into traning and testing dataset
+
     X_train_vectorized=((X_train.reshape(X_train.shape[0],-1)).T)[:,0:number_of_training_samples_to_use]
+
     y_train = y_train[0:number_of_training_samples_to_use]
     X_test_vectorized=((X_test.reshape(X_test.shape[0],-1)).T)[:,0:number_of_test_samples_to_use]
     y_test = y_test[0:number_of_test_samples_to_use]
+
+
     number_of_images_to_view=16
     test_x=X_train_vectorized[:,0:number_of_images_to_view].T.reshape((number_of_images_to_view,28,28))
     display_images(test_x)
     input_dimensions=X_test_vectorized.shape[0]
     model = Hebbian(input_dimensions=input_dimensions, number_of_classes=number_of_classes,
-                    transfer_function="Hard_limit",seed=5)
+                     transfer_function="Hard_limit",seed=5)
     model.initialize_all_weights_to_zeros()
     percent_error=[]
     for k in range (10):
         model.train(X_train_vectorized, y_train,batch_size=300, num_epochs=2, alpha=0.1,gamma=0.1,learning="Delta")
         percent_error.append(model.calculate_percent_error(X_test_vectorized,y_test))
-    print("******  Percent Error ******\n",percent_error)
-    confusion_matrix=model.calculate_confusion_matrix(X_test_vectorized,y_test)
-    print(np.array2string(confusion_matrix, separator=","))
+    print("******  Percent Error ******\n",percent_error);
+    # confusion_matrix=model.calculate_confusion_matrix(X_test_vectorized,y_test)
+    # print(np.array2string(confusion_matrix, separator=","))
