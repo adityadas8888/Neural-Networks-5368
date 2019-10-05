@@ -121,9 +121,9 @@ class Hebbian(object):
            for j in range(no_runs+1):
                
                input_sliced = X[:,start:end];
-               output = np.dot(self.weights,input_sliced);
-               #call to predict
-            #    predicted_sliced = np.where(output[:] <0, 0,1);   
+               output = np.dot(self.weights,input_sliced);  # this multiplies the weights with the sliced input. Essentially giving the output.
+               #call to activation_function
+               something = self.predict(output);  
                target_sliced = X[:,start:end];
                error = target_sliced - predicted_sliced;
                ep = self.calculate_error(error,input_sliced);
@@ -146,6 +146,17 @@ class Hebbian(object):
         #     print("Invalid")
 
 
+
+    def activation_function(self,X):
+
+        if(self.transfer_function=="Hard_limit"):
+            predicted_batch = np.where(X[:] <0, 0,1);  
+        elif(self.transfer_function=="Sigmoid"):
+            print("Sigmoid")
+        elif(self.transfer_function=="Linear"):
+            print("Linear")
+        else:
+            print("Invalid");
 
     def chunkify(self,dataset_size,batch_size):
         no_runs = int(dataset_size/batch_size);
@@ -194,6 +205,12 @@ if __name__ == "__main__":
     y_test = y_test[0:number_of_test_samples_to_use]
 
 
+    print('xtest',X_test.shape);
+    print('\nytest',y_train.shape);
+    print('\nxtrain',X_train.shape);
+    print('\nytrain',y_train.shape);
+    print('\nxtest_vectorised',X_test_vectorized.shape);
+    print('\nxtrain_vectorised',X_train_vectorized.shape);
     number_of_images_to_view=16
     test_x=X_train_vectorized[:,0:number_of_images_to_view].T.reshape((number_of_images_to_view,28,28))
     display_images(test_x)
@@ -206,5 +223,5 @@ if __name__ == "__main__":
         model.train(X_train_vectorized, y_train,batch_size=300, num_epochs=2, alpha=0.1,gamma=0.1,learning="Delta")
         percent_error.append(model.calculate_percent_error(X_test_vectorized,y_test))
     print("******  Percent Error ******\n",percent_error);
-    # confusion_matrix=model.calculate_confusion_matrix(X_test_vectorized,y_test)
-    # print(np.array2string(confusion_matrix, separator=","))
+    confusion_matrix=model.calculate_confusion_matrix(X_test_vectorized,y_test)
+    print(np.array2string(confusion_matrix, separator=","))
