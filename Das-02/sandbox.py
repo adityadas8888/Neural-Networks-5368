@@ -187,17 +187,29 @@ class Hebbian(object):
         """
         predicted= self.predict(X);
         flag = 0;
-        for i in range(len(X[0])):                                                  ## this has to be changed.
-           predicted_sliced = np.expand_dims(predicted[:,i],axis=1);
-           target_sliced = np.expand_dims(Y[:,i],axis=1);
-        #    print("predicted\n",predicted_sliced);
-        #    print("target\n",target_sliced);
-           if(np.array_equal(predicted_sliced,target_sliced)):
-               flag +=0
-           else:
-               flag+=1;
-        return (flag/len(X[0]));
-
+        if(self.transfer_function=='Hard_limit'):
+            for i in range(len(X[0])):                                                  ## this has to be changed.
+                predicted_sliced = np.expand_dims(predicted[:,i],axis=1);
+                target_sliced = np.expand_dims(Y[:,i],axis=1);
+                #    print("predicted\n",predicted_sliced);
+                #    print("target\n",target_sliced);
+                if(np.array_equal(predicted_sliced,target_sliced)):
+                    flag +=0
+                else:
+                    flag+=1;
+            return (flag/len(X[0]));
+            
+        elif(self.transfer_function=='Sigmoid' or self.transfer_function=='Sigmoid'):
+            for i in range(len(X[0])):                                                  ## this has to be changed.
+                predicted_sliced = np.expand_dims(predicted[:,i],axis=1);
+                target_sliced = np.expand_dims(Y[:,i],axis=1);
+                #    print("predicted\n",predicted_sliced);
+                #    print("target\n",target_sliced);
+                if(np.array_equal(predicted_sliced,target_sliced)):
+                    flag +=0
+                else:
+                    flag+=1;
+            return (flag/len(X[0]));
 
     def calculate_confusion_matrix(self,X,y):
         """
@@ -212,7 +224,7 @@ class Hebbian(object):
         Confusion matrix should be shown as the number of times that
         an image of class n is classified as class m where 1<=n,m<=number_of_classes.
         """
-        
+
 
 
 
