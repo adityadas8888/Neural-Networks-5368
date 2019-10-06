@@ -84,18 +84,16 @@ class Hebbian(object):
         as the first row.
         :return: Array of model outputs [number_of_classes ,n_samples]. This array is a numerical array.
         """
-        # if(self.transfer_function=="Hard_limit"):
-        #     print("hard limit")
-        # elif(self.transfer_function=="Sigmoid"):
-        #     print("Sigmoid")
-        # elif(self.transfer_function=="Linear"):
-        #     print("Linear")
-        # else:
-        #     print("Invalid")
+        X = np.insert(X,0,1,axis=0);                            # adds the bias to the matrix
+        predicted = self.transfer_function(X);  #call to activation_function   
+        return predicted
+
     def print_weights(self):
         """
         This function prints the weight matrix (Bias is included in the weight matrix).
         """
+        print(self.weights);
+
     def train(self, X, Y, batch_size=1,num_epochs=10,  alpha=0.1,gamma=0.9,learning="Delta"):
         """
         Given a batch of data, and the necessary hyperparameters,
@@ -112,58 +110,72 @@ class Hebbian(object):
         :return: None
         """
 
-        no_runs,remaining = self.chunkify(X.shape[1],batch_size);
+        no_runs,remaining = self.chunkify(X.shape[1],batch_size);                   # get the number of batches and the batch size remaining.
 
-        X = np.insert(X,0,1,axis=0);
-        for i in range(num_epochs):
+        X = np.insert(X,0,1,axis=0);                            # adds the bias to the matrix
+
+        for i in range(num_epochs):  
            start = 0;
            end = batch_size-1;
            for j in range(no_runs+1):
                
                input_sliced = X[:,start:end];
                output = np.dot(self.weights,input_sliced);  # this multiplies the weights with the sliced input. Essentially giving the output.
-               #call to activation_function
-               something = self.predict(output);  
-               target_sliced = X[:,start:end];
-               error = target_sliced - predicted_sliced;
+               predicted = self.transfer_function(output);  #call to activation_function   
+            #    calculate the error matrix Y- predicted by expanding Y
                ep = self.calculate_error(error,input_sliced);
-               self.weights = self.weights + alpha*(ep);
-               start = end+1;
+               if(self.transfer_function=="Filtered"):
+                   self.weights = (1-gamma)*self.weights+alpha*Y#*T;
+               elif(self.transfer_function=="Delta"):
+                   self.weights = self.weights+alpha*Y#ep;
+               elif(self.transfer_function=="Unsupervised_hebb"):
+                   self.weights = self.weights+alpha*Y#*A;      
+               else:
+                   print("invalid learning rule,exiting!!!");
+                   exit();
+       
+               start = end;
                if(j==no_runs-1):
-                   end =  X.shape[1]-remaining;
+                   end =  X.shape[1]
                elif(j<no_runs):
-                   end = ((j+2)*batch_size)-1;
+                   end = ((j+2)*batch_size);
                 
 
 
-        # if(self.transfer_function=="Filtered"):
-        #     print("Filtered")
-        # elif(self.transfer_function=="Delta"):
-        #     print("Delta")
-        # elif(self.transfer_function=="Unsupervised_hebb"):
-        #     print("Unsupervised_hebb")
-        # else:
-        #     print("Invalid")
+
 
 
 
     def activation_function(self,X):
 
         if(self.transfer_function=="Hard_limit"):
-            predicted_batch = np.where(X[:] <0, 0,1);  
+            predicted = self.hard_limit(X);
+            return X;
         elif(self.transfer_function=="Sigmoid"):
-            print("Sigmoid")
+            predicted = self.sigmoid(X);
+            return X;
         elif(self.transfer_function=="Linear"):
-            print("Linear")
+            return X;
+
         else:
-            print("Invalid");
+            print("Invalid transfer function, exiting!!!!!");
+            exit();
+
+    def sigmoid(self,X):
+                return 1/(1+np.exp(-X))
+    
+    def hard_limit(self,X):
+                return np.where(X[:] <0, 0,1);
 
     def chunkify(self,dataset_size,batch_size):
         no_runs = int(dataset_size/batch_size);
         remaining = dataset_size%batch_size;
         return no_runs,remaining
 
-    def calculate_percent_error(self,X, y):
+    def calculate_error(self,X,Y):
+        return X.dot(np.transpose(Y));
+
+    def calculate_percent_error(self,X, Y):
         """
         Given a batch of data this function calculates percent error.
         For each input sample, if the predicted class output is not the same as the desired class,
@@ -173,6 +185,20 @@ class Hebbian(object):
         the desired (true) class.
         :return percent_error
         """
+        predicted= self.predict(X);
+        flag = 0;
+        for i in range(len(X[0])):                                                  ## this has to be changed.
+           predicted_sliced = np.expand_dims(predicted[:,i],axis=1);
+           target_sliced = np.expand_dims(Y[:,i],axis=1);
+        #    print("predicted\n",predicted_sliced);
+        #    print("target\n",target_sliced);
+           if(np.array_equal(predicted_sliced,target_sliced)):
+               flag +=0
+           else:
+               flag+=1;
+        return (flag/len(X[0]));
+
+
     def calculate_confusion_matrix(self,X,y):
         """
         Given a desired (true) output as one hot and the predicted output as one-hot,
@@ -186,6 +212,7 @@ class Hebbian(object):
         Confusion matrix should be shown as the number of times that
         an image of class n is classified as class m where 1<=n,m<=number_of_classes.
         """
+        
 
 
 
@@ -200,7 +227,7 @@ if __name__ == "__main__":
 
     X_train_vectorized=((X_train.reshape(X_train.shape[0],-1)).T)[:,0:number_of_training_samples_to_use]
 
-    y_train = y_train[0:number_of_training_samples_to_use]
+    y_train = y_train[0:number_of_training_samples_to_use]                                                              # this is the target sample to be tested on.
     X_test_vectorized=((X_test.reshape(X_test.shape[0],-1)).T)[:,0:number_of_test_samples_to_use]
     y_test = y_test[0:number_of_test_samples_to_use]
 
@@ -218,10 +245,11 @@ if __name__ == "__main__":
     model = Hebbian(input_dimensions=input_dimensions, number_of_classes=number_of_classes,
                      transfer_function="Hard_limit",seed=5)
     model.initialize_all_weights_to_zeros()
+    print("input dimensions",input_dimensions);
     percent_error=[]
-    for k in range (10):
-        model.train(X_train_vectorized, y_train,batch_size=300, num_epochs=2, alpha=0.1,gamma=0.1,learning="Delta")
-        percent_error.append(model.calculate_percent_error(X_test_vectorized,y_test))
-    print("******  Percent Error ******\n",percent_error);
-    confusion_matrix=model.calculate_confusion_matrix(X_test_vectorized,y_test)
-    print(np.array2string(confusion_matrix, separator=","))
+    # for k in range (10):
+    #     model.train(X_train_vectorized, y_train,batch_size=300, num_epochs=2, alpha=0.1,gamma=0.1,learning="Delta")
+    #     percent_error.append(model.calculate_percent_error(X_test_vectorized,y_test))
+    # print("******  Percent Error ******\n",percent_error);
+    # confusion_matrix=model.calculate_confusion_matrix(X_test_vectorized,y_test)
+    # print(np.array2string(confusion_matrix, separator=","))
