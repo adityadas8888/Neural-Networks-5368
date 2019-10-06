@@ -122,14 +122,18 @@ class Hebbian(object):
                input_sliced = X[:,start:end];
                output = np.dot(self.weights,input_sliced);  # this multiplies the weights with the sliced input. Essentially giving the output.
                predicted = self.transfer_function(output);  #call to activation_function   
-            #    calculate the error matrix Y- predicted by expanding Y
+               Y = self.one_hot(Y);
+               Y=Y.T;
+               target_sliced = Y [:,start:end];
+               error = target_sliced-predicted;
                ep = self.calculate_error(error,input_sliced);
+
                if(self.transfer_function=="Filtered"):
-                   self.weights = (1-gamma)*self.weights+alpha*Y#*T;
+                   self.weights = (1-gamma)*self.weights+alpha*input_sliced*target_sliced;
                elif(self.transfer_function=="Delta"):
-                   self.weights = self.weights+alpha*Y#ep;
+                   self.weights = self.weights+alpha*ep;
                elif(self.transfer_function=="Unsupervised_hebb"):
-                   self.weights = self.weights+alpha*Y#*A;      
+                   self.weights = self.weights+alpha*predicted*input_sliced;      
                else:
                    print("invalid learning rule,exiting!!!");
                    exit();
@@ -160,6 +164,9 @@ class Hebbian(object):
         else:
             print("Invalid transfer function, exiting!!!!!");
             exit();
+
+    def one_hot(self,X):
+        return(np.squeeze(np.eye(10)[X.reshape(-1)]))
 
     def sigmoid(self,X):
                 return 1/(1+np.exp(-X))
@@ -244,21 +251,22 @@ if __name__ == "__main__":
     y_test = y_test[0:number_of_test_samples_to_use]
 
 
-    print('xtest',X_test.shape);
-    print('\nytest',y_train.shape);
-    print('\nxtrain',X_train.shape);
-    print('\nytrain',y_train.shape);
-    print('\nxtest_vectorised',X_test_vectorized.shape);
-    print('\nxtrain_vectorised',X_train_vectorized.shape);
+    # print('xtest',X_test.shape);
+    # print('\nytest',y_train.shape);
+    # print('\nxtrain',X_train.shape);
+    # print('\nytrain',y_train.shape);
+    # print('\nxtest_vectorised',X_test_vectorized.shape);
+    # print('\nxtrain_vectorised',X_train_vectorized.shape);
     number_of_images_to_view=16
     test_x=X_train_vectorized[:,0:number_of_images_to_view].T.reshape((number_of_images_to_view,28,28))
-    display_images(test_x)
+    # display_images(test_x)
     input_dimensions=X_test_vectorized.shape[0]
     model = Hebbian(input_dimensions=input_dimensions, number_of_classes=number_of_classes,
                      transfer_function="Hard_limit",seed=5)
     model.initialize_all_weights_to_zeros()
-    print("input dimensions",input_dimensions);
+    # print("input dimensions",input_dimensions);
     percent_error=[]
+    print(y_train.shape);
     # for k in range (10):
     #     model.train(X_train_vectorized, y_train,batch_size=300, num_epochs=2, alpha=0.1,gamma=0.1,learning="Delta")
     #     percent_error.append(model.calculate_percent_error(X_test_vectorized,y_test))
