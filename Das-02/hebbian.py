@@ -112,18 +112,20 @@ class Hebbian(object):
         
         X_with_bias=np.insert(X,0,1,axis=0);
         no_runs,remaining=self.chunker(X,batch_size);
-
         Y_encoded=self.one_hot(Y)
         for i in range(num_epochs):
-            start=batch_size
-            end=batch_size
+            start = 0;
+            end=batch_size;
             for j in range(no_runs):
-                if i==no_runs-1 and remaining!=0:
-                    input_sliced=X_with_bias[:, (j*start):X_with_bias.shape[1]]
-                    target_sliced=Y_encoded[:,(j*start):X_with_bias.shape[1]]
+
+                input_sliced = X_with_bias[:,start:end];
+                target_sliced = Y_encoded[:, start:end];
+
+                start=end;
+                if i==no_runs-2 and remaining !=0:
+                    end = X_with_bias.shape[1];
                 else:
-                    input_sliced = X_with_bias[:,(j*start):((j+1)*end)]
-                    target_sliced = Y_encoded[:, (j * start):((j+1)*end)]
+                    end = (j+2)*batch_size;
 
                 output=np.dot(self.weights,input_sliced);
                 predicted=self.activation_function(output);
