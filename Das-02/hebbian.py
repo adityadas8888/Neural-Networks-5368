@@ -54,62 +54,69 @@ class Hebbian(object):
         self._initialize_weights()
     
     def _initialize_weights(self):
+    # This function initializes random values for the weights
         self.weights = []
         self.weights = np.random.randn(self.number_of_classes, self.input_dimensions + 1, );
     
     def initialize_all_weights_to_zeros(self):
+    # This function initializes the weights to zero
         self.weights = []
         self.weights = np.zeros((self.number_of_classes, self.input_dimensions + 1,));
 
     def predict(self, X):
-
-        X = np.dot(self.weights,np.insert(X, 0, 1, axis=0)); # added bias and multiplied weights
+    # This function multiplies the trained weights with the input and returns the predicted value after passing the output through an activation function
+        X = np.dot(self.weights,np.insert(X, 0, 1, axis=0));                                                          # added bias and multiplied weights
         predicted=self.activation_function(X);
         return predicted
 
     def activation_function(self,X):
+    # This function passes the received values through an activation function and returns the output
         if self.transfer_function == "Hard_limit":
-            X = np.where(X <= 0, 0, 1);
+            predicted = np.where(X <= 0, 0, 1);                                             '''activation function: hard_limit'''
         elif self.transfer_function == "Sigmoid":
-            X = 1 / (1 + np.exp(-X));
+            predicted = 1 / (1 + np.exp(-X));                                               '''activation function: Sigmoid'''
         elif self.transfer_function == "Linear":
-            return X
+            return X                                                                       #'''activation function Linear'''
         else:
             print("Invalid Learning Rule, Exiting!!!");
             exit();
-
-        return X
+        return predicted
 
     def predict_noduplicate(self, X):
-
+    #This function multiplies the trained weights with the input and returns the predicted value after passing the output through an activation function. 
+    # This takes care of the duplicate max values by choosing the first max and returning a one hot encoded value
         X=np.dot(self.weights,np.insert(X, 0, 1, axis=0));  # added bias and multiplied weights
         if self.transfer_function == "Hard_limit":
-            predicted = self.one_hot(np.argmax(np.where(X <= 0, 0, 1), axis=0));
+            predicted = self.one_hot(np.argmax(np.where(X <= 0, 0, 1), axis=0));            '''activation function: hard_limit'''
         elif self.transfer_function == "Sigmoid":
-            predicted=self.one_hot(np.argmax(1 / (1 + np.exp(-X)), axis=0));
+            predicted=self.one_hot(np.argmax(1 / (1 + np.exp(-X)), axis=0));                '''activation function: Sigmoid'''
         elif self.transfer_function == "Linear":
-            predicted = self.one_hot(np.argmax(X, axis=0));
+            predicted = self.one_hot(np.argmax(X, axis=0));                                 '''activation function: Linear'''
         else:
             print("Invalid Learning Rule, Exiting!!!");
             exit();
         return predicted
 
     def one_hot(self,Y):
+    # This function does one hot encoding on the input matrix
         Y = np.squeeze(np.eye(self.number_of_classes)[Y.reshape(-1)]);
         return Y.T
 
     def print_weights(self):
+    # This function prints the weights
         print(self.weights);
 
     def chunker(self,X,batch_size):
+    # This function decides the number of batches to be made and if the dataset size is not perfectly divisible, it returns the remaining data after all 
+    # batches are done and increases the run loop by one
         no_runs = int(X.shape[1]/batch_size);
         remaining = X.shape[1]%batch_size;
         if remaining!=0:
             no_runs+=1
         return no_runs,remaining;
 
-    def train(self, X, Y, batch_size=1,num_epochs=10,  alpha=0.1,gamma=0.9,learning="Delta"):           # definitely change this
-        
+    def train(self, X, Y, batch_size=1,num_epochs=10,  alpha=0.1,gamma=0.9,learning="Delta"):           
+        # This function trains the weights on a particular training set 
         X_with_bias=np.insert(X,0,1,axis=0);
         no_runs,remaining=self.chunker(X,batch_size);
         Y_encoded=self.one_hot(Y)
@@ -117,20 +124,16 @@ class Hebbian(object):
             start = 0;
             end=batch_size;
             for j in range(no_runs):
-
                 input_sliced = X_with_bias[:,start:end];
                 target_sliced = Y_encoded[:, start:end];
-
                 start=end;
-                if i==no_runs-2 and remaining !=0:
+                if i==no_runs-2 and remaining !=0:                                                                  # if the dataset size is not perfectly divisible, it changes the end index;
                     end = X_with_bias.shape[1];
                 else:
                     end = (j+2)*batch_size;
-
                 output=np.dot(self.weights,input_sliced);
                 predicted=self.activation_function(output);
-
-                if learning == "Delta":
+                if learning == "Delta":                                                                             # training the weights according to the learning rules
                     self.weights = self.weights + alpha*np.dot((target_sliced- predicted),input_sliced.T);
                 elif learning == "Filtered":
                     self.weights = ((1 - gamma) * self.weights) + (alpha * np.dot(target_sliced, input_sliced.T));
@@ -140,23 +143,22 @@ class Hebbian(object):
                     print("Invalid Learning Rule, Exiting!!!");
                     exit();
 
-    def calculate_percent_error(self,X, Y):       # try to change this
-
-        X = self.predict_noduplicate(X);
+    def calculate_percent_error(self,X, Y):       
+    # This function prints the error percentage
+        X = self.predict_noduplicate(X);                                                    
         Y = self.one_hot(Y);
         flag = 0;
         for i in range(X.shape[1]):
            predicted_sliced = np.expand_dims(X[:,i],axis=1);
            target_sliced = np.expand_dims(Y[:,i],axis=1);
-           
            if(np.array_equal(predicted_sliced,target_sliced)):
                flag +=0
            else:
                flag+=1;
-        return flag/Y.shape[1];
+        return flag/X.shape[1];
 
     def calculate_confusion_matrix(self,X,Y):
-
+    # This function calculates the confusion matrix and returns it
         X = self.predict_noduplicate(X);
         Y = self.one_hot(Y);
         confusion_matrix = np.zeros((Y.shape[0], Y.shape[0]));
@@ -181,7 +183,7 @@ if __name__ == "__main__":
     y_test = y_test[0:number_of_test_samples_to_use]
     number_of_images_to_view=16
     test_x=X_train_vectorized[:,0:number_of_images_to_view].T.reshape((number_of_images_to_view,28,28))
-    #display_images(test_x)
+    display_images(test_x)
     input_dimensions=X_test_vectorized.shape[0]
     model = Hebbian(input_dimensions=input_dimensions, number_of_classes=number_of_classes,
                     transfer_function="Hard_limit",seed=5)
