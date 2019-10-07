@@ -1,20 +1,25 @@
 import numpy as np
-batch_size = 30;
-start = 0;
-dataset=130
-no_runs=int(dataset/batch_size);
-X= np.ones(1300);
-end = batch_size;
-for j in range(no_runs+1):
-    print("before, start",start);
-    print("\nbefore, end",end);
-    # print(X[start:end]);
-    print("\n",len(X[start:end]));
-    start = end;
-    if(j==no_runs-1):
-        end =  dataset;
-        print("epoch",end);
-    elif(j<no_runs):
-        end = ((j+2)*batch_size);
-        print("\nafter, start",start);
-        print("\nafter, end",end);
+a=np.array([[0.5,0.5,0.3,0.4,0],
+            [0.5,0.3,0.5,0.2,1],
+            [0.2,0.4,0.2,0.3,0]]);
+some = np.amax(a, axis=0);
+print(some);
+print(len(a[0]));
+a=np.where(some==a,1,0);
+print("a matrix\n",a);
+b=np.array([[1,0,0,0,1],
+            [0,0,1,0,0],
+            [0,1,0,1,0]])
+print("b matrix\n",b);
+
+
+# confusion = np.zeros((3,3));
+# for i in range(len(a[0])):
+
+#     predicted_sliced = np.expand_dims(a[:,i],axis=1);
+#     target_sliced = np.expand_dims(b[:,i],axis=1);
+#     predict_index=np.argmax(predicted_sliced);
+#     target_index=np.argmax(target_sliced)
+#     confusion[predict_index][target_index]+=1;
+
+# print("confusion\n",confusion);

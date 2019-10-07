@@ -47,6 +47,7 @@ def test_predict():
     Y_hat = model.predict(X_train)
     assert (np.array_equal(Y_hat, np.array([[0,0,0,0], [0,0,0,0]]))) or \
            (np.array_equal(Y_hat, np.array([[1,1,1,1], [1,1,1,1]])))
+           
 def test_predict_2():
     number_of_classes = 10
     number_of_training_samples_to_use = 3
