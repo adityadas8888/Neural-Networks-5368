@@ -6,6 +6,7 @@
 import numpy as np
 import pytest
 from hebbian import Hebbian
+# from sandbox import Hebbian
 import tensorflow as tf
 
 

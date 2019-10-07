@@ -9,7 +9,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-
 def display_images(images):
 	# This function displays images on a grid.
 	# Farhad Kamangar Sept. 2019
@@ -45,174 +44,127 @@ def display_numpy_array_as_table(input_array):
 	ax.set_yticks([])
 	plt.show()
 
-
-
 class Hebbian(object):
     def __init__(self, input_dimensions=2,number_of_classes=4,transfer_function="Hard_limit",seed=None):
-
         if seed != None:
             np.random.seed(seed)
         self.input_dimensions = input_dimensions
         self.number_of_classes=number_of_classes
         self.transfer_function=transfer_function
         self._initialize_weights()
+    
     def _initialize_weights(self):
-        self.weights = [];
-        self.weights = np.array(self.weights, dtype=np.float);
-        self.weights = np.random.randn(self.number_of_classes,self.input_dimensions+1);
-
+        self.weights = []
+        self.weights = np.random.randn(self.number_of_classes, self.input_dimensions + 1, );
+    
     def initialize_all_weights_to_zeros(self):
-        self.weights = np.zeros([self.number_of_classes,self.input_dimensions+1], dtype = int);
+        self.weights = []
+        self.weights = np.zeros((self.number_of_classes, self.input_dimensions + 1,));
 
     def predict(self, X):
 
-        X = np.insert(X,0,1,axis=0);                            # adds the bias to the matrix
-        output = np.dot(self.weights,X);         # predict the values by multiplying the trained weights
-        predicted = self.activation_function(output);  #call to activation_function
-        
+        X = np.dot(self.weights,np.insert(X, 0, 1, axis=0)); # added bias and multiplied weights
+        predicted=self.activation_function(X);
         return predicted
 
+    def activation_function(self,X):
+        if self.transfer_function == "Hard_limit":
+            X = np.where(X <= 0, 0, 1);
+        elif self.transfer_function == "Sigmoid":
+            X = 1 / (1 + np.exp(-X));
+        elif self.transfer_function == "Linear":
+            return X
+        else:
+            print("Invalid Learning Rule, Exiting!!!");
+            exit();
+
+        return X
+
+    def predict_noduplicate(self, X):
+
+        X=np.dot(self.weights,np.insert(X, 0, 1, axis=0));  # added bias and multiplied weights
+        if self.transfer_function == "Hard_limit":
+            predicted = self.one_hot(np.argmax(np.where(X <= 0, 0, 1), axis=0));
+        elif self.transfer_function == "Sigmoid":
+            predicted=self.one_hot(np.argmax(1 / (1 + np.exp(-X)), axis=0));
+        elif self.transfer_function == "Linear":
+            predicted = self.one_hot(np.argmax(X, axis=0));
+        else:
+            print("Invalid Learning Rule, Exiting!!!");
+            exit();
+        return predicted
+
+    def one_hot(self,Y):
+        Y = np.squeeze(np.eye(self.number_of_classes)[Y.reshape(-1)]);
+        return Y.T
+
     def print_weights(self):
-        """
-        This function prints the weight matrix (Bias is included in the weight matrix).
-        """
         print(self.weights);
 
-    def train(self, X, Y, batch_size=1,num_epochs=10,  alpha=0.1,gamma=0.9,learning="Delta"):
-
-        no_runs,remaining = self.chunkify(X.shape[1],batch_size);                   # get the number of batches and the batch size remaining.
-        X = np.insert(X,0,1,axis=0);                            # adds the bias to the matrix
-        Y = self.one_hot(Y);
-        Y=Y.T;
+    def chunker(self,X,batch_size):
+        no_runs = int(X.shape[1]/batch_size);
+        remaining = X.shape[1]%batch_size;
         if remaining!=0:
             no_runs+=1
+        return no_runs,remaining;
 
-        for i in range(num_epochs):  
-           start = 0;
-           end = batch_size;
-           for j in range(no_runs):
-               
-               input_sliced = X[:,start:end];
-               output = np.dot(self.weights,input_sliced);  # this multiplies the weights with the sliced input. Essentially giving the output.
-               predicted = self.activation_function(output);  #call to activation_function   
-               target_sliced = Y [:,start:end];
-               error = target_sliced-predicted;
-               ep = self.calculate_error(error,input_sliced);
+    def train(self, X, Y, batch_size=1,num_epochs=10,  alpha=0.1,gamma=0.9,learning="Delta"):           # definitely change this
+        
+        X_with_bias=np.insert(X,0,1,axis=0);
+        no_runs,remaining=self.chunker(X,batch_size);
 
-               if(learning=="Filtered"):
-                   self.weights = (1-gamma)*self.weights+(alpha*target_sliced*input_sliced.T);
-               elif(learning=="Delta"):
-                   self.weights = self.weights+(alpha*ep);
-               elif(learning=="Unsupervised_hebb"):
-                   self.weights = self.weights+(alpha*predicted*input_sliced.T);      
-               else:
-                   print("invalid learning rule,exiting!!!");
-                   exit();
+        Y_encoded=self.one_hot(Y)
+        for i in range(num_epochs):
+            start=batch_size
+            end=batch_size
+            for j in range(no_runs):
+                if i==no_runs-1 and remaining!=0:
+                    input_sliced=X_with_bias[:, (j*start):X_with_bias.shape[1]]
+                    target_sliced=Y_encoded[:,(j*start):X_with_bias.shape[1]]
+                else:
+                    input_sliced = X_with_bias[:,(j*start):((j+1)*end)]
+                    target_sliced = Y_encoded[:, (j * start):((j+1)*end)]
 
-               start = end;
-               if(j==no_runs-1):
-                   end =  X.shape[1]
-               elif(j<no_runs):
-                   end = ((j+2)*batch_size);
-                
+                output=np.dot(self.weights,input_sliced);
+                predicted=self.activation_function(output);
 
+                if learning == "Delta":
+                    self.weights = self.weights + alpha*np.dot((target_sliced- predicted),input_sliced.T);
+                elif learning == "Filtered":
+                    self.weights = ((1 - gamma) * self.weights) + (alpha * np.dot(target_sliced, input_sliced.T));
+                elif learning == "Unsupervised_hebb":
+                    self.weights = self.weights + alpha * np.dot(predicted, input_sliced.T);
+                else:
+                    print("Invalid Learning Rule, Exiting!!!");
+                    exit();
 
-    def activation_function(self,X):
+    def calculate_percent_error(self,X, Y):       # try to change this
 
-        if(self.transfer_function=="Hard_limit"):
-            predicted = self.hard_limit(X);
-            return X;
-        elif(self.transfer_function=="Sigmoid"):
-            predicted = self.sigmoid(X);
-            return X;
-        elif(self.transfer_function=="Linear"):
-            return X;
-
-        else:
-            print("Invalid transfer function, exiting!!!!!");
-            exit();
-
-    def activation_function_predict(self,X):
-
-        if(self.transfer_function=="Hard_limit"):
-            predicted = self.hard_limit(X);
-            return X;
-        elif(self.transfer_function=="Sigmoid"):
-            predicted = self.sigmoid(X);
-            return X;
-        elif(self.transfer_function=="Linear"):
-            return X;
-
-        else:
-            print("Invalid transfer function, exiting!!!!!");
-            exit();
-
-
-    def one_hot(self,X):
-        return(np.squeeze(np.eye(10)[X.reshape(-1)]))
-
-    def sigmoid(self,X):
-                return 1/(1+np.exp(-X))
-    
-    def hard_limit(self,X):
-                return np.where(X[:] <=0, 0,1);
-
-    def chunkify(self,dataset_size,batch_size):
-        no_runs = int(dataset_size/batch_size);
-        remaining = dataset_size%batch_size;
-        return no_runs,remaining
-
-    def calculate_error(self,X,Y):
-        return X.dot(np.transpose(Y));
-
-    def calculate_percent_error(self,X, Y):
-
+        X = self.predict_noduplicate(X);
         Y = self.one_hot(Y);
-        Y=Y.T;
-        predicted= self.predict(X);
-        flag=0
-        if(self.transfer_function=='Hard_limit'):
-            for i in range(len(X[0])):
-                predicted_sliced = np.expand_dims(predicted[:,i],axis=1);
-                target_sliced = np.expand_dims(Y[:,i],axis=1);
-        #    print("predicted\n",predicted_sliced);
-        #    print("target\n",target_sliced);
-                if(np.array_equal(predicted_sliced,target_sliced)):
-                    flag +=0
-                else:
-                    flag+=1;
-            return (flag/len(X[0]));
-
-        elif(self.transfer_function=='Linear' or self.transfer_function=='Sigmoid'):
-            max_col = np.amax(predicted, axis=0)
-            predicted=np.where(max_col==predicted,1,0)
-            for i in range(len(X[0])):
-                predicted_sliced = np.expand_dims(predicted[:,i],axis=1);
-                target_sliced = np.expand_dims(Y[:,i],axis=1);
-                if(np.array_equal(predicted_sliced,target_sliced)):
-                    flag +=0
-                else:
-                    flag+=1;
-
-            return (flag/len(X[0]));
+        flag = 0;
+        for i in range(X.shape[1]):
+           predicted_sliced = np.expand_dims(X[:,i],axis=1);
+           target_sliced = np.expand_dims(Y[:,i],axis=1);
+           
+           if(np.array_equal(predicted_sliced,target_sliced)):
+               flag +=0
+           else:
+               flag+=1;
+        return flag/Y.shape[1];
 
     def calculate_confusion_matrix(self,X,Y):
 
-        Y = self.one_hot(Y);                    ##did one hot encoding
-        Y=Y.T;
-        a,b = np.shape(Y);
-        predicted = self.predict(X);    
+        X = self.predict_noduplicate(X);
+        Y = self.one_hot(Y);
+        confusion_matrix = np.zeros((Y.shape[0], Y.shape[0]));
+        for i in range(Y.shape[1]):
+            actual_index = np.argmax(X[:, i], axis=0);
+            target_index = np.argmax(Y[:, i], axis=0);
+            confusion_matrix[target_index][actual_index] += 1
+        return confusion_matrix
 
-        flag=0
-        confusion = np.zeros((self.number_of_classes,self.number_of_classes));
-        for i in range(b):
 
-            predicted_sliced = np.expand_dims(predicted[:,i],axis=1);
-            target_sliced = np.expand_dims(Y[:,i],axis=1);
-            predict_index=np.argmax(predicted_sliced);
-            target_index=np.argmax(target_sliced)
-            confusion[target_index][predict_index]+=1;
-        return confusion
 
 if __name__ == "__main__":
 
@@ -220,29 +172,23 @@ if __name__ == "__main__":
     number_of_classes = 10
     number_of_training_samples_to_use = 700
     number_of_test_samples_to_use = 100
-
-    (X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data(); ## splitting into traning and testing dataset
-
+    (X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data()
     X_train_vectorized=((X_train.reshape(X_train.shape[0],-1)).T)[:,0:number_of_training_samples_to_use]
-
-    y_train = y_train[0:number_of_training_samples_to_use]                                                              # this is the target sample to be tested on.
+    y_train = y_train[0:number_of_training_samples_to_use]
     X_test_vectorized=((X_test.reshape(X_test.shape[0],-1)).T)[:,0:number_of_test_samples_to_use]
     y_test = y_test[0:number_of_test_samples_to_use]
-
     number_of_images_to_view=16
     test_x=X_train_vectorized[:,0:number_of_images_to_view].T.reshape((number_of_images_to_view,28,28))
-    # display_images(test_x)
+    #display_images(test_x)
     input_dimensions=X_test_vectorized.shape[0]
     model = Hebbian(input_dimensions=input_dimensions, number_of_classes=number_of_classes,
-                     transfer_function="Hard_limit",seed=5)
+                    transfer_function="Hard_limit",seed=5)
     model.initialize_all_weights_to_zeros()
-    # print("input dimensions",input_dimensions);
     percent_error=[]
     for k in range (10):
         model.train(X_train_vectorized, y_train,batch_size=300, num_epochs=2, alpha=0.1,gamma=0.1,learning="Delta")
-        # print('x_test_vectorised',X_test_vectorized.shape);
-        # print('y_test',y_test.shape);
         percent_error.append(model.calculate_percent_error(X_test_vectorized,y_test))
-    print("******  Percent Error ******\n",percent_error);
+    print("******  Percent Error ******\n",percent_error)
     confusion_matrix=model.calculate_confusion_matrix(X_test_vectorized,y_test)
     print(np.array2string(confusion_matrix, separator=","))
+    model.print_weights()
