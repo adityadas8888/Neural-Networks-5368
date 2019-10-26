@@ -1,11 +1,12 @@
-# Kamangar, Farhad
-# 1000-123-456
-# 2019-10-07
+# Das, Aditya
+# 1001-675-762
+# 2019-10-28
 # Assignment-03-01
 
 # using tensorflow_version 2.x
 import tensorflow as tf
 import numpy as np
+import keras.datasets
 
 
 class MultiNN(object):
@@ -23,29 +24,39 @@ class MultiNN(object):
     def add_layer(self, num_nodes, activation_function):
         """
          This function adds a dense layer to the neural network
-         Given a batch of data, and the necessary hyperparameters,
-         this function trains the neural network by adjusting the weights and biases of all the layers.
          :param num_nodes: number of nodes in the layer
          :param activation_function: Activation function for the layer
          :return: None
          """
+        if len(self.weights)==0:
+            self.weights.append(np.zeros((self.input_dimension,num_nodes)));
+            self.biases.append(np.zeros((num_nodes,1)));
+        else:
+            temp,prev_num_nodes=np.shape(self.weights[len(self.weights)-1]);
+            self.weights.append(np.zeros((prev_num_nodes,num_nodes)));
+            self.biases.append(np.zeros((prev_num_nodes,1)));
+        self.activations.append(activation_function);
+         
 
     def get_weights_without_biases(self, layer_number):
         """
         This function should return the weight matrix (without biases) for layer layer_number.
         layer numbers start from zero.
         This means that the first layer with activation function is layer zero
-         :param layer_number: Layer number starting from layer 0
-         :return: Weight matrix for the given layer (not including the biases)
+         :param layer_number: Layer number starting from layer 0.
+         :return: Weight matrix for the given layer (not including the biases). Note that the shape of the weight matrix should be
+          [input_dimensions][number of nodes]
          """
+
+
 
     def get_biases(self, layer_number):
         """
-        This function should return the weight matrix for layer layer_number.
+        This function should return the biases for layer layer_number.
         layer numbers start from zero.
         This means that the first layer with activation function is layer zero
          :param layer_number: Layer number starting from layer 0
-         :return: Weight matrix for the given layer (not including the biases)
+         :return: Weight matrix for the given layer (not including the biases). Note that the biases shape should be [1][number_of_nodes]
          """
 
     def set_weights_without_biases(self, weights, layer_number):
@@ -53,7 +64,8 @@ class MultiNN(object):
         This function sets the weight matrix for layer layer_number.
         layer numbers start from zero.
         This means that the first layer with activation function is layer zero
-         :param weights: weight matrix (without biases)
+         :param weights: weight matrix (without biases). Note that the shape of the weight matrix should be
+          [input_dimensions][number of nodes]
          :param layer_number: Layer number starting from layer 0
          :return: none
          """
@@ -63,7 +75,7 @@ class MultiNN(object):
         This function sets the biases for layer layer_number.
         layer numbers start from zero.
         This means that the first layer with activation function is layer zero
-        :param biases: biases
+        :param biases: biases. Note that the biases shape should be [1][number_of_nodes]
         :param layer_number: Layer number starting from layer 0
         :return: none
         """
@@ -77,7 +89,6 @@ class MultiNN(object):
         self.loss = loss_fn
 
     def sigmoid(self, x):
-
         return tf.nn.sigmoid(x)
 
     def linear(self, x):
@@ -100,16 +111,15 @@ class MultiNN(object):
     def predict(self, X):
         """
         Given array of inputs, this function calculates the output of the multi-layer network.
-        :param X: Array of input [input_dimensions,n_samples]. Note that the input X does not include a row of ones
-        as the first row.
-        :return: Array of outputs [number_of_classes ,n_samples]. This array is a numerical array.
+        :param X: Array of input [n_samples,input_dimensions].
+        :return: Array of outputs [n_samples,number_of_classes ]. This array is a numerical array.
         """
 
     def train(self, X_train, y_train, batch_size, num_epochs, alpha=0.8, regularization_coeff=1e-6):
         """
          Given a batch of data, and the necessary hyperparameters,
          this function trains the neural network by adjusting the weights and biases of all the layers.
-         :param X: Array of input [input_dimensions,n_samples]
+         :param X: Array of input [n_samples,input_dimensions]
          :param y: Array of desired (target) outputs [n_samples]. This array includes the indexes of
          the desired (true) class.
          :param batch_size: number of samples in a batch
@@ -125,7 +135,7 @@ class MultiNN(object):
         this method calculates the percent error.
         For each input sample, if the predicted class output is not the same as the desired class,
         then it is considered one error. Percent error is number_of_errors/ number_of_samples.
-        :param X: Array of input [input_dimensions,n_samples]
+        :param X: Array of input [n_samples,input_dimensions]
         :param y: Array of desired (target) outputs [n_samples]. This array includes the indexes of
         the desired (true) class.
         :return percent_error
@@ -135,7 +145,7 @@ class MultiNN(object):
         """
         Given input samples and corresponding desired (true) output as indexes,
         this method calculates the confusion matrix.
-        :param X: Array of input [input_dimensions,n_samples]
+        :param X: Array of input [n_samples,input_dimensions]
         :param y: Array of desired (target) outputs [n_samples]. This array includes the indexes of
         the desired (true) class.
         :return confusion_matrix[number_of_classes,number_of_classes].
@@ -145,28 +155,28 @@ class MultiNN(object):
 
 
 if __name__ == "__main__":
-    from tensorflow.keras.datasets import mnist
+    from keras.datasets import mnist
 
     np.random.seed(seed=1)
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
     # Reshape and Normalize data
-    X_train = X_train.reshape(-1, 784).astype(np.float64) / 255.0 - 0.5
+    X_train = X_train.reshape(-1, 784).astype(np.float64) / 255.0 - 0.5   # to make it compatible with the 784 size 
     y_train = y_train.flatten().astype(np.int32)
     input_dimension = X_train.shape[1]
-    indices = list(range(X_train.shape[0]))
+    indices = list(range(X_train.shape[0]))         ## making a list of all the indices of the array
     # np.random.shuffle(indices)
     number_of_samples_to_use = 500
-    X_train = X_train[indices[:number_of_samples_to_use]]
+    X_train = X_train[indices[:number_of_samples_to_use]]                   ## splicing the training data
     y_train = y_train[indices[:number_of_samples_to_use]]
-    multi_nn = MultiNN(input_dimension)
+    multi_nn = MultiNN(input_dimension)                             ## its sending 784 to the class
     number_of_classes = 10
     activations_list = [multi_nn.sigmoid, multi_nn.sigmoid, multi_nn.linear]
-    number_of_neurons_list = [50, 20, number_of_classes]
+    number_of_neurons_list = [50, 20, number_of_classes]                ##?
     for layer_number in range(len(activations_list)):
         multi_nn.add_layer(number_of_neurons_list[layer_number], activation_function=activations_list[layer_number])
     for layer_number in range(len(multi_nn.weights)):
         W = multi_nn.get_weights_without_biases(layer_number)
-        W = tf.Variable((np.random.randn(*W.shape) - 0.0) * 0.1, trainable=True)
+        W = tf.Variable((np.random.randn(*W.shape)) * 0.1, trainable=True)
         multi_nn.set_weights_without_biases(W, layer_number)
         b = multi_nn.get_biases(layer_number=layer_number)
         b = tf.Variable(np.zeros(b.shape) * 0, trainable=True)
