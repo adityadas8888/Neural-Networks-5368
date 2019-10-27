@@ -123,7 +123,7 @@ class MultiNN(object):
         layers,num_nodes=np.shape(self.weights);
         predicted=[]
         for i in range(layers):
-            weights=self.weights[i];
+            weights=self.weights[i];    
             bias=self.biases[i];
             weights.append(bias);
             transfer_function = self.activations[i];
