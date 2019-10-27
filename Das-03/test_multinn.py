@@ -1,13 +1,12 @@
-# Kamangar, Farhad
-# 1000-123-456
-# 2019-10-07
+# Das, Aditya
+# 1001-675-762
+# 2019-10-27
 # Assignment-03-02
 
 import numpy as np
 import pytest
 from multinn import MultiNN
 import tensorflow as tf
-import keras.datasets
 
 def test_weight_and_biases_dimensions():
     input_dimension = 4
@@ -15,7 +14,7 @@ def test_weight_and_biases_dimensions():
     number_of_nodes_in_layers_list=list(np.random.randint(3,high=15,size=(number_of_layers,)))
     multi_nn = MultiNN(input_dimension)
     for layer_number in range(len(number_of_nodes_in_layers_list)):
-        multi_nn.add_layer(number_of_nodes_in_layers_list[layer_number], activation_function=multi_nn.sigmoid)      ## number of nodes
+        multi_nn.add_layer(number_of_nodes_in_layers_list[layer_number], activation_function=multi_nn.sigmoid)
     previous_number_of_outputs=input_dimension
     # assert multi_nn.get_weights_without_biases(0).shape == (4, 12)
     for layer_number in range(len(number_of_nodes_in_layers_list)):
@@ -55,12 +54,12 @@ def test_predict():
     for layer_number in range(len(number_of_nodes_in_layers_list)):
         W=multi_nn.get_weights_without_biases(layer_number)
         np.random.seed(seed=1)
-        W=np.random.randn(*W.shape)                         ## random weight values are generated
-        multi_nn.set_weights_without_biases(W,layer_number)     ##  random weights values are set up at the weights matrix according to the weights I created
-        b = multi_nn.get_biases(layer_number)       
+        W=np.random.randn(*W.shape)
+        multi_nn.set_weights_without_biases(W,layer_number)
+        b = multi_nn.get_biases(layer_number)
         b = np.random.randn(*b.shape)
-        multi_nn.set_biases(b, layer_number)                    ## random biases are set according to the shape of the biases
-    X=np.random.randn(number_of_samples,input_dimension)        
+        multi_nn.set_biases(b, layer_number)
+    X=np.random.randn(number_of_samples,input_dimension)
     Y=multi_nn.predict(X)
 
     assert np.allclose(Y.numpy(),np.array( \
@@ -103,52 +102,52 @@ def test_predict_02():
          [-0.54751084, -3.30222443, -1.73142232, 1.72880885, -2.50151569]]), rtol=1e-3, atol=1e-3)
 
 
-#  def test_train():
-#     from keras.datasets import mnist
-#     np.random.seed(seed=1)
-#     (X_train, y_train), (X_test, y_test) = mnist.load_data()
-#     # Reshape and Normalize data
-#     X_train = X_train.reshape(-1, 784).astype(np.float64) / 255.0 - 0.5
-#     y_train = y_train.flatten().astype(np.int32)
-#     input_dimension = X_train.shape[1]
-#     indices = list(range(X_train.shape[0]))
-#     # np.random.shuffle(indices)
-#     number_of_samples_to_use = 500
-#     X_train = X_train[indices[:number_of_samples_to_use]]
-#     y_train = y_train[indices[:number_of_samples_to_use]]
-#     multi_nn = MultiNN(input_dimension)
-#     number_of_classes = 10
-#     activations_list = [multi_nn.sigmoid, multi_nn.sigmoid, multi_nn.linear]
-#     number_of_neurons_list = [50, 20, number_of_classes]
-#     for layer_number in range(len(activations_list)):
-#         multi_nn.add_layer(number_of_neurons_list[layer_number], activation_function=activations_list[layer_number])
-#     for layer_number in range(len(multi_nn.weights)):
-#         W = multi_nn.get_weights_without_biases(layer_number)
-#         np.random.seed(seed=1)
-#         W = tf.Variable((np.random.randn(*W.shape) - 0.0) * 0.1, trainable=True)
-#         multi_nn.set_weights_without_biases(W, layer_number)
-#         b = multi_nn.get_biases(layer_number=layer_number)
-#         b = tf.Variable(np.zeros(b.shape) * 0, trainable=True)
-#         multi_nn.set_biases(b, layer_number)
-#     multi_nn.set_loss_function(multi_nn.cross_entropy_loss)
-#     percent_error = []
-#     for k in range(10):
-#         multi_nn.train(X_train, y_train, batch_size=100, num_epochs=20, alpha=0.8)
-#         percent_error.append(multi_nn.calculate_percent_error(X_train, y_train))
-#     confusion_matrix = multi_nn.calculate_confusion_matrix(X_train, y_train)
+def test_train():
+    from tensorflow.keras.datasets import mnist
+    np.random.seed(seed=1)
+    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    # Reshape and Normalize data
+    X_train = X_train.reshape(-1, 784).astype(np.float64) / 255.0 - 0.5
+    y_train = y_train.flatten().astype(np.int32)
+    input_dimension = X_train.shape[1]
+    indices = list(range(X_train.shape[0]))
+    # np.random.shuffle(indices)
+    number_of_samples_to_use = 500
+    X_train = X_train[indices[:number_of_samples_to_use]]
+    y_train = y_train[indices[:number_of_samples_to_use]]
+    multi_nn = MultiNN(input_dimension)
+    number_of_classes = 10
+    activations_list = [multi_nn.sigmoid, multi_nn.sigmoid, multi_nn.linear]
+    number_of_neurons_list = [50, 20, number_of_classes]
+    for layer_number in range(len(activations_list)):
+        multi_nn.add_layer(number_of_neurons_list[layer_number], activation_function=activations_list[layer_number])
+    for layer_number in range(len(multi_nn.weights)):
+        W = multi_nn.get_weights_without_biases(layer_number)
+        np.random.seed(seed=1)
+        W = tf.Variable((np.random.randn(*W.shape) - 0.0) * 0.1, trainable=True)
+        multi_nn.set_weights_without_biases(W, layer_number)
+        b = multi_nn.get_biases(layer_number=layer_number)
+        b = tf.Variable(np.zeros(b.shape) * 0, trainable=True)
+        multi_nn.set_biases(b, layer_number)
+    multi_nn.set_loss_function(multi_nn.cross_entropy_loss)
+    percent_error = []
+    for k in range(10):
+        multi_nn.train(X_train, y_train, batch_size=100, num_epochs=20, alpha=0.8)
+        percent_error.append(multi_nn.calculate_percent_error(X_train, y_train))
+    confusion_matrix = multi_nn.calculate_confusion_matrix(X_train, y_train)
 
-#     # print(np.array2string(np.array(percent_error), separator=","))
-#     # print(np.array2string(np.array(confusion_matrix), separator=","))
-#     assert np.allclose(percent_error, np.array( \
-#         [0.488,0.208,0.102,0.02 ,0.002,0.   ,0.   ,0.   ,0.   ,0.   ]), rtol=1e-3, atol=1e-3)
-#     assert np.allclose(confusion_matrix, np.array( \
-#         [[50., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-#          [0., 66., 0., 0., 0., 0., 0., 0., 0., 0.],
-#          [0., 0., 52., 0., 0., 0., 0., 0., 0., 0.],
-#          [0., 0., 0., 50., 0., 0., 0., 0., 0., 0.],
-#          [0., 0., 0., 0., 52., 0., 0., 0., 0., 0.],
-#          [0., 0., 0., 0., 0., 39., 0., 0., 0., 0.],
-#          [0., 0., 0., 0., 0., 0., 45., 0., 0., 0.],
-#          [0., 0., 0., 0., 0., 0., 0., 52., 0., 0.],
-#          [0., 0., 0., 0., 0., 0., 0., 0., 39., 0.],
-#          [0., 0., 0., 0., 0., 0., 0., 0., 0., 55.]]), rtol=1e-3, atol=1e-3)
+    # print(np.array2string(np.array(percent_error), separator=","))
+    # print(np.array2string(np.array(confusion_matrix), separator=","))
+    assert np.allclose(percent_error, np.array( \
+        [0.488,0.208,0.102,0.02 ,0.002,0.   ,0.   ,0.   ,0.   ,0.   ]), rtol=1e-3, atol=1e-3)
+    assert np.allclose(confusion_matrix, np.array( \
+        [[50., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+         [0., 66., 0., 0., 0., 0., 0., 0., 0., 0.],
+         [0., 0., 52., 0., 0., 0., 0., 0., 0., 0.],
+         [0., 0., 0., 50., 0., 0., 0., 0., 0., 0.],
+         [0., 0., 0., 0., 52., 0., 0., 0., 0., 0.],
+         [0., 0., 0., 0., 0., 39., 0., 0., 0., 0.],
+         [0., 0., 0., 0., 0., 0., 45., 0., 0., 0.],
+         [0., 0., 0., 0., 0., 0., 0., 52., 0., 0.],
+         [0., 0., 0., 0., 0., 0., 0., 0., 39., 0.],
+         [0., 0., 0., 0., 0., 0., 0., 0., 0., 55.]]), rtol=1e-3, atol=1e-3)

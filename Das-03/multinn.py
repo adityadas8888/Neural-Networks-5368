@@ -1,20 +1,15 @@
 # Das, Aditya
 # 1001-675-762
-# 2019-10-28
+# 2019-10-27
 # Assignment-03-01
 
 # using tensorflow_version 2.x
 import tensorflow as tf
 import numpy as np
-import keras.datasets
 
 
 class MultiNN(object):
     def __init__(self, input_dimension):
-        """
-        Initialize multi-layer neural network
-        :param input_dimension: The number of dimensions for each the input data sample
-        """
         self.input_dimension = input_dimension
         self.weights = []
         self.biases = []
@@ -22,75 +17,31 @@ class MultiNN(object):
         self.loss = None
 
     def add_layer(self, num_nodes, activation_function):
-        """
-         This function adds a dense layer to the neural network
-         :param num_nodes: number of nodes in the layer
-         :param activation_function: Activation function for the layer
-         :return: None
-         """
+
         if len(self.weights)==0:
-            self.weights.append(np.random.randint(0,high=100,size=(self.input_dimension,num_nodes)));
-            self.biases.append(np.random.randint(0,high=100,size=(1,num_nodes)));
+          self.weights.append(tf.random.normal((self.input_dimension,num_nodes)))
+          self.biases.append(tf.random.normal((num_nodes,1)))
         else:
-            temp,prev_num_nodes=np.shape(self.weights[len(self.weights)-1]);
-            self.weights.append(np.random.randint(0,high=100,size=(prev_num_nodes,num_nodes)));
-            self.biases.append(np.random.randint(0,high=100,size=(1,prev_num_nodes)));
-        self.activations.append(activation_function);
-         
+          self.weights.append(tf.random.normal((len(self.weights[-1][1]),num_nodes)))
+          self.biases.append(tf.random.normal((num_nodes,1)))
+        self.activations.append(activation_function)
 
     def get_weights_without_biases(self, layer_number):
-        """
-        This function should return the weight matrix (without biases) for layer layer_number.
-        layer numbers start from zero.
-        This means that the first layer with activation function is layer zero
-         :param layer_number: Layer number starting from layer 0.
-         :return: Weight matrix for the given layer (not including the biases). Note that the shape of the weight matrix should be
-          [input_dimensions][number of nodes]
-         """
-        return self.weights[layer_number];
+        return self.weights[layer_number]
         
 
 
     def get_biases(self, layer_number):
-        """
-        This function should return the biases for layer layer_number.
-        layer numbers start from zero.
-        This means that the first layer with activation function is layer zero
-         :param layer_number: Layer number starting from layer 0
-         :return: Weight matrix for the given layer (not including the biases). Note that the biases shape should be [1][number_of_nodes]
-         """
-        return self.biases[layer_number];
+        return self.biases[layer_number]
 
     def set_weights_without_biases(self, weights, layer_number):
-        """
-        This function sets the weight matrix for layer layer_number.
-        layer numbers start from zero.
-        This means that the first layer with activation function is layer zero
-         :param weights: weight matrix (without biases). Note that the shape of the weight matrix should be
-          [input_dimensions][number of nodes]
-         :param layer_number: Layer number starting from layer 0
-         :return: none
-         """
-        self.weights[layer_number]=weights;
+        self.weights[layer_number]=weights
 
 
     def set_biases(self, biases, layer_number):
-        """
-        This function sets the biases for layer layer_number.
-        layer numbers start from zero.
-        This means that the first layer with activation function is layer zero
-        :param biases: biases. Note that the biases shape should be [1][number_of_nodes]
-        :param layer_number: Layer number starting from layer 0
-        :return: none
-        """
-        self.biases[layer_number]=biases;
+        self.biases[layer_number]=biases
 
     def set_loss_function(self, loss_fn):
-        """
-        This function sets the loss function.
-        :param loss_fn: Loss function
-        :return: none
-        """
         self.loss = loss_fn
 
     def sigmoid(self, x):
@@ -104,108 +55,87 @@ class MultiNN(object):
         return out
 
     def cross_entropy_loss(self, y, y_hat):
-        """
-        This function calculates the cross entropy loss
-        :param y: Array of desired (target) outputs [n_samples]. This array includes the indexes of
-         the desired (true) class.
-        :param y_hat: Array of actual outputs values [n_samples][number_of_classes].
-        :return: loss
-        """
+
         return tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, logits=y_hat))
 
     def predict(self, X):
-        """
-        Given array of inputs, this function calculates the output of the multi-layer network.
-        :param X: Array of input [n_samples,input_dimensions].
-        :return: Array of outputs [n_samples,number_of_classes ]. This array is a numerical array.
-        """
-
-        layers,num_nodes=np.shape(self.weights);
-        predicted=[]
+        layers=len(self.weights)
+        input_layer = X
         for i in range(layers):
-            weights=self.weights[i];    
-            bias=self.biases[i];
-            weights.append(bias);
-            transfer_function = self.activations[i];
-
-            if self.activations[i] == "multi_nn.sigmoid":
-                predicted = self.sigmoid(np.dot(weights,X));                                             '''activation function: hard_limit'''
-            elif self.transfer_function == "multi_nn.relu":
-                predicted = self.relu(np.dot(weights,X));                                                '''activation function: Sigmoid'''
-            elif self.transfer_function == "multi_nn.linear":
-                predicted = self.linear(np.dot(weights,X));                                                                       #'''activation function Linear'''
-            else:
-                print("Invalid Learning Rule, Exiting!!!");
-                exit();
-        return predicted   
-
-
-
-
-
+            predicted = tf.matmul(input_layer,self.weights[i])+tf.transpose(self.biases[i])
+            trained = self.activations[i](predicted) 
+            input_layer=trained
+        return trained
 
     def train(self, X_train, y_train, batch_size, num_epochs, alpha=0.8, regularization_coeff=1e-6):
-        """
-         Given a batch of data, and the necessary hyperparameters,
-         this function trains the neural network by adjusting the weights and biases of all the layers.
-         :param X: Array of input [n_samples,input_dimensions]
-         :param y: Array of desired (target) outputs [n_samples]. This array includes the indexes of
-         the desired (true) class.
-         :param batch_size: number of samples in a batch
-         :param num_epochs: Number of times training should be repeated over all input data
-         :param alpha: Learning rate
-         :param regularization_coeff: regularization coefficient
-         :return: None
-         """
+        no_runs,remaining=self.chunker(X_train,batch_size) 
+        for i in range(num_epochs):
+            start = 0 
+            end=batch_size 
+            for j in range(no_runs):
+                input_sliced = X_train[start:end,:] 
+                target_sliced = y_train[start:end] 
+                start=end 
+                if i==no_runs-2 and remaining !=0:                                                                  # if the dataset size is not perfectly divisible, it changes the end index 
+                    end = X_train.shape[0] 
+                else:
+                    end = (j+2)*batch_size
+                # output=np.dot(self.weights,input_sliced)
 
+                with tf.GradientTape() as tape:
+                    predicted = self.predict(input_sliced)
+                    loss=self.cross_entropy_loss(target_sliced,predicted)
+                    loss_bias,loss_weight=tape.gradient(loss,[self.biases,self.weights])
+                for i in range(len(self.weights)):
+                    self.weights[i].assign_sub(alpha*loss_weight[i])
+                    self.biases[i].assign_sub(alpha*loss_bias[i])
+
+
+    def chunker(self,X,batch_size):
+    # This function decides the number of batches to be made and if the dataset size is not perfectly divisible, it returns the remaining data after all 
+    # batches are done and increases the run loop by one
+        no_runs = int(X.shape[0]/batch_size)
+        remaining = X.shape[0]%batch_size
+        if remaining!=0:
+            no_runs+=1
+        return no_runs,remaining
 
 
     def calculate_percent_error(self, X, y):
-        """
-        Given input samples and corresponding desired (true) output as indexes,
-        this method calculates the percent error.
-        For each input sample, if the predicted class output is not the same as the desired class,
-        then it is considered one error. Percent error is number_of_errors/ number_of_samples.
-        :param X: Array of input [n_samples,input_dimensions]
-        :param y: Array of desired (target) outputs [n_samples]. This array includes the indexes of
-        the desired (true) class.
-        :return percent_error
-        """
-        # X = self.predict_noduplicate(X);                                                    
-        # Y = self.one_hot(Y);
-        # flag = 0;
-        # for i in range(X.shape[1]):
-        #    predicted_sliced = np.expand_dims(X[:,i],axis=1);
-        #    target_sliced = np.expand_dims(Y[:,i],axis=1);
-        #    if(np.array_equal(predicted_sliced,target_sliced)):
-        #        flag +=0
-        #    else:
-        #        flag+=1;
-        # return flag/X.shape[1];
+
+        percent_error=0
+        pred_y=self.predict(X)
+        num_ofsamples,num_of_classes=np.shape(pred_y)
+        print(num_ofsamples)
+        target_class_predicted=np.argmax(pred_y,axis=1)
+        commons=np.sum(np.where(target_class_predicted==y,0,1))
+        # commons=sum(i != j for i, j in zip(target_class_predicted, y))
+        
+        percent_error=commons
+        return percent_error/num_ofsamples
+    
+    
+    def one_hot(self,Y,number_of_classes):
+    # This function does one hot encoding on the input matrix
+        Y = np.squeeze(np.eye(number_of_classes)[Y.reshape(-1)])
+        return Y
 
     def calculate_confusion_matrix(self, X, y):
-        """
-        Given input samples and corresponding desired (true) output as indexes,
-        this method calculates the confusion matrix.
-        :param X: Array of input [n_samples,input_dimensions]
-        :param y: Array of desired (target) outputs [n_samples]. This array includes the indexes of
-        the desired (true) class.
-        :return confusion_matrix[number_of_classes,number_of_classes].
-        Confusion matrix should be shown as the number of times that
-        an image of class n is classified as class m where 1<=n,m<=number_of_classes.
-        """
-        # X = self.predict_noduplicate(X);
-        # Y = self.one_hot(Y);
-        # confusion_matrix = np.zeros((Y.shape[0], Y.shape[0]));
-        # for i in range(Y.shape[1]):
-        #     actual_index = np.argmax(X[:, i], axis=0);
-        #     target_index = np.argmax(Y[:, i], axis=0);
-        #     confusion_matrix[target_index][actual_index] += 1
-        # return confusion_matrix
-
+        
+        X=self.predict(X)
+        rows,number_of_classes=np.shape(X)
+        y = self.one_hot(y,number_of_classes)
+        confusion_matrix = np.zeros((number_of_classes,number_of_classes)) 
+        print(y.shape)
+        print(X.shape)
+        for i in range(rows):
+            actual_index = np.argmax(X[i,:], axis=0) 
+            target_index = np.argmax(y[i,:], axis=0) 
+            confusion_matrix[target_index][actual_index] += 1
+        return confusion_matrix
 
 if __name__ == "__main__":
-    from keras.datasets import mnist
+    from tensorflow.keras.datasets import mnist
 
     np.random.seed(seed=1)
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
