@@ -55,12 +55,12 @@ def test_predict():
     for layer_number in range(len(number_of_nodes_in_layers_list)):
         W=multi_nn.get_weights_without_biases(layer_number)
         np.random.seed(seed=1)
-        W=np.random.randn(*W.shape)
-        multi_nn.set_weights_without_biases(W,layer_number)
-        b = multi_nn.get_biases(layer_number)
+        W=np.random.randn(*W.shape)                         ## random weight values are generated
+        multi_nn.set_weights_without_biases(W,layer_number)     ##  random weights values are set up at the weights matrix according to the weights I created
+        b = multi_nn.get_biases(layer_number)       
         b = np.random.randn(*b.shape)
-        multi_nn.set_biases(b, layer_number)
-    X=np.random.randn(number_of_samples,input_dimension)
+        multi_nn.set_biases(b, layer_number)                    ## random biases are set according to the shape of the biases
+    X=np.random.randn(number_of_samples,input_dimension)        
     Y=multi_nn.predict(X)
 
     assert np.allclose(Y.numpy(),np.array( \
@@ -72,35 +72,35 @@ def test_predict():
          [0.03880329, 0.41823933, 0.33338152, 0.98297688, 0.86816211],
          [0.04737598, 0.4365602, 0.41720532, 0.9806787, 0.79618209]]),rtol=1e-3, atol=1e-3)
 
-#  def test_predict_02():
-#     np.random.seed(seed=1)
-#     input_dimension = 4
-#     number_of_samples = 7
-#     number_of_layers = 2
-#     number_of_nodes_in_layers_list = list(np.random.randint(3, high=15, size=(number_of_layers,)))
-#     number_of_nodes_in_layers_list[-1] = 5
-#     multi_nn = MultiNN(input_dimension)
-#     for layer_number in range(len(number_of_nodes_in_layers_list)):
-#         multi_nn.add_layer(number_of_nodes_in_layers_list[layer_number], activation_function=multi_nn.linear)
-#     for layer_number in range(len(number_of_nodes_in_layers_list)):
-#         W = multi_nn.get_weights_without_biases(layer_number)
-#         np.random.seed(seed=1)
-#         W = np.random.randn(*W.shape)
-#         multi_nn.set_weights_without_biases(W, layer_number)
-#         b = multi_nn.get_biases(layer_number)
-#         b = np.random.randn(*b.shape)
-#         multi_nn.set_biases(b, layer_number)
-#     X = 0.01*np.random.randn(number_of_samples, input_dimension)
-#     Y = multi_nn.predict(X).numpy()
-#     # print(np.array2string(np.array(Y), separator=","))
-#     assert np.allclose(Y, np.array( \
-#         [[-0.40741104, -3.44566828, -1.76869339, 1.6163245, -2.54072028],
-#          [-0.43079142, -3.33179871, -1.68949031, 1.60929609, -2.56731804],
-#          [-0.40121922, -3.38003556, -1.72446422, 1.62425049, -2.53508997],
-#          [-0.39082312, -3.38185473, -1.70911191, 1.58223456, -2.57304599],
-#          [-0.32408109, -3.351902, -1.66647768, 1.55353972, -2.5740835],
-#          [-0.25208801, -3.46616221, -1.72734675, 1.53356758, -2.55233025],
-#          [-0.54751084, -3.30222443, -1.73142232, 1.72880885, -2.50151569]]), rtol=1e-3, atol=1e-3)
+def test_predict_02():
+    np.random.seed(seed=1)
+    input_dimension = 4
+    number_of_samples = 7
+    number_of_layers = 2
+    number_of_nodes_in_layers_list = list(np.random.randint(3, high=15, size=(number_of_layers,)))
+    number_of_nodes_in_layers_list[-1] = 5
+    multi_nn = MultiNN(input_dimension)
+    for layer_number in range(len(number_of_nodes_in_layers_list)):
+        multi_nn.add_layer(number_of_nodes_in_layers_list[layer_number], activation_function=multi_nn.linear)
+    for layer_number in range(len(number_of_nodes_in_layers_list)):
+        W = multi_nn.get_weights_without_biases(layer_number)
+        np.random.seed(seed=1)
+        W = np.random.randn(*W.shape)
+        multi_nn.set_weights_without_biases(W, layer_number)
+        b = multi_nn.get_biases(layer_number)
+        b = np.random.randn(*b.shape)
+        multi_nn.set_biases(b, layer_number)
+    X = 0.01*np.random.randn(number_of_samples, input_dimension)
+    Y = multi_nn.predict(X).numpy()
+    # print(np.array2string(np.array(Y), separator=","))
+    assert np.allclose(Y, np.array( \
+        [[-0.40741104, -3.44566828, -1.76869339, 1.6163245, -2.54072028],
+         [-0.43079142, -3.33179871, -1.68949031, 1.60929609, -2.56731804],
+         [-0.40121922, -3.38003556, -1.72446422, 1.62425049, -2.53508997],
+         [-0.39082312, -3.38185473, -1.70911191, 1.58223456, -2.57304599],
+         [-0.32408109, -3.351902, -1.66647768, 1.55353972, -2.5740835],
+         [-0.25208801, -3.46616221, -1.72734675, 1.53356758, -2.55233025],
+         [-0.54751084, -3.30222443, -1.73142232, 1.72880885, -2.50151569]]), rtol=1e-3, atol=1e-3)
 
 
 #  def test_train():

@@ -120,6 +120,30 @@ class MultiNN(object):
         :return: Array of outputs [n_samples,number_of_classes ]. This array is a numerical array.
         """
 
+        layers,num_nodes=np.shape(self.weights);
+        predicted=[]
+        for i in range(layers):
+            weights=self.weights[i];
+            bias=self.biases[i];
+            weights.append(bias);
+            transfer_function = self.activations[i];
+
+            if self.activations[i] == "multi_nn.sigmoid":
+                predicted = self.sigmoid(np.dot(weights,X));                                             '''activation function: hard_limit'''
+            elif self.transfer_function == "multi_nn.relu":
+                predicted = self.relu(np.dot(weights,X));                                                '''activation function: Sigmoid'''
+            elif self.transfer_function == "multi_nn.linear":
+                predicted = self.linear(np.dot(weights,X));                                                                       #'''activation function Linear'''
+            else:
+                print("Invalid Learning Rule, Exiting!!!");
+                exit();
+        return predicted   
+
+
+
+
+
+
     def train(self, X_train, y_train, batch_size, num_epochs, alpha=0.8, regularization_coeff=1e-6):
         """
          Given a batch of data, and the necessary hyperparameters,
@@ -133,6 +157,8 @@ class MultiNN(object):
          :param regularization_coeff: regularization coefficient
          :return: None
          """
+
+
 
     def calculate_percent_error(self, X, y):
         """
