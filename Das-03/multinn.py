@@ -29,12 +29,12 @@ class MultiNN(object):
          :return: None
          """
         if len(self.weights)==0:
-            self.weights.append(np.zeros((self.input_dimension,num_nodes)));
-            self.biases.append(np.zeros((num_nodes,1)));
+            self.weights.append(np.random.randint(0,high=100,size=(self.input_dimension,num_nodes)));
+            self.biases.append(np.random.randint(0,high=100,size=(1,num_nodes)));
         else:
             temp,prev_num_nodes=np.shape(self.weights[len(self.weights)-1]);
-            self.weights.append(np.zeros((prev_num_nodes,num_nodes)));
-            self.biases.append(np.zeros((prev_num_nodes,1)));
+            self.weights.append(np.random.randint(0,high=100,size=(prev_num_nodes,num_nodes)));
+            self.biases.append(np.random.randint(0,high=100,size=(1,prev_num_nodes)));
         self.activations.append(activation_function);
          
 
@@ -47,7 +47,8 @@ class MultiNN(object):
          :return: Weight matrix for the given layer (not including the biases). Note that the shape of the weight matrix should be
           [input_dimensions][number of nodes]
          """
-
+        return self.weights[layer_number];
+        
 
 
     def get_biases(self, layer_number):
@@ -58,6 +59,7 @@ class MultiNN(object):
          :param layer_number: Layer number starting from layer 0
          :return: Weight matrix for the given layer (not including the biases). Note that the biases shape should be [1][number_of_nodes]
          """
+        return self.biases[layer_number];
 
     def set_weights_without_biases(self, weights, layer_number):
         """
@@ -69,6 +71,8 @@ class MultiNN(object):
          :param layer_number: Layer number starting from layer 0
          :return: none
          """
+        self.weights[layer_number]=weights;
+
 
     def set_biases(self, biases, layer_number):
         """
@@ -79,6 +83,7 @@ class MultiNN(object):
         :param layer_number: Layer number starting from layer 0
         :return: none
         """
+        self.biases[layer_number]=biases;
 
     def set_loss_function(self, loss_fn):
         """
@@ -140,6 +145,17 @@ class MultiNN(object):
         the desired (true) class.
         :return percent_error
         """
+        # X = self.predict_noduplicate(X);                                                    
+        # Y = self.one_hot(Y);
+        # flag = 0;
+        # for i in range(X.shape[1]):
+        #    predicted_sliced = np.expand_dims(X[:,i],axis=1);
+        #    target_sliced = np.expand_dims(Y[:,i],axis=1);
+        #    if(np.array_equal(predicted_sliced,target_sliced)):
+        #        flag +=0
+        #    else:
+        #        flag+=1;
+        # return flag/X.shape[1];
 
     def calculate_confusion_matrix(self, X, y):
         """
@@ -152,6 +168,14 @@ class MultiNN(object):
         Confusion matrix should be shown as the number of times that
         an image of class n is classified as class m where 1<=n,m<=number_of_classes.
         """
+        # X = self.predict_noduplicate(X);
+        # Y = self.one_hot(Y);
+        # confusion_matrix = np.zeros((Y.shape[0], Y.shape[0]));
+        # for i in range(Y.shape[1]):
+        #     actual_index = np.argmax(X[:, i], axis=0);
+        #     target_index = np.argmax(Y[:, i], axis=0);
+        #     confusion_matrix[target_index][actual_index] += 1
+        # return confusion_matrix
 
 
 if __name__ == "__main__":
