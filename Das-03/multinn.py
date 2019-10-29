@@ -84,11 +84,12 @@ class MultiNN(object):
 
                 with tf.GradientTape() as tape:
                     predicted = self.predict(input_sliced)
-                    loss=self.cross_entropy_loss(target_sliced,predicted)
+                    loss=self.loss(target_sliced,predicted)
+
                     loss_bias,loss_weight=tape.gradient(loss,[self.biases,self.weights])
-                for i in range(len(self.weights)):
-                    self.weights[i].assign_sub(alpha*loss_weight[i])
-                    self.biases[i].assign_sub(alpha*loss_bias[i])
+                    for i in range(len(self.weights)):
+                        self.weights[i].assign_sub(alpha*loss_weight[i])
+                        self.biases[i].assign_sub(alpha*loss_bias[i])
 
 
     def chunker(self,X,batch_size):
@@ -106,7 +107,6 @@ class MultiNN(object):
         percent_error=0
         pred_y=self.predict(X)
         num_ofsamples,num_of_classes=np.shape(pred_y)
-        print(num_ofsamples)
         target_class_predicted=np.argmax(pred_y,axis=1)
         commons=np.sum(np.where(target_class_predicted==y,0,1))
         # commons=sum(i != j for i, j in zip(target_class_predicted, y))
@@ -126,8 +126,6 @@ class MultiNN(object):
         rows,number_of_classes=np.shape(X)
         y = self.one_hot(y,number_of_classes)
         confusion_matrix = np.zeros((number_of_classes,number_of_classes)) 
-        print(y.shape)
-        print(X.shape)
         for i in range(rows):
             actual_index = np.argmax(X[i,:], axis=0) 
             target_index = np.argmax(y[i,:], axis=0) 
